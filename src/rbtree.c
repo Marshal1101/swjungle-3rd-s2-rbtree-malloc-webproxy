@@ -101,13 +101,13 @@ node_t *rbtree_insert_fixup(rbtree *t, node_t *z) {
       // 경우2 z가 부모의 오른쪽 자식이면(값이 더 크면)
         z = z->parent;
         // 새로운 기준은 기존 z의 부모로 설정하고
-        void left_rotate(rbtree *t, node_t *z);
+        left_rotate(t, z);
         // 레프트회전을 하면 부모로 설정된 z가
         // 이제 자식이 되고 원래 자식이 부모가 된다(z->parent)
         }
         z->parent->color = RBTREE_BLACK;
         z->parent->parent->color = RBTREE_RED;
-        void right_rotate(rbtree *t, node_t *z);
+        right_rotate(t, z->parent->parent);
       }
     }
     else {
@@ -128,13 +128,13 @@ node_t *rbtree_insert_fixup(rbtree *t, node_t *z) {
         // 경우2 z가 부모의 왼쪽 자식이면(값이 더 작으면)
         z = z->parent;
         // 새로운 기준은 기존 z의 부모로 설정하고
-        void right_rotate(rbtree *t, node_t *z);
+        right_rotate(t, z);
         // 라이트회전을 하면 부모로 설정된 z가
         // 이제 자식이 되고 원래 자식이 부모가 된다(z->parent)
         }
         z->parent->color = RBTREE_BLACK;
         z->parent->parent->color = RBTREE_RED;
-        void left_rotate(rbtree *t, node_t *z);
+        left_rotate(t, z->parent->parent);
       }
     }
   }
@@ -145,7 +145,7 @@ node_t *rbtree_insert_fixup(rbtree *t, node_t *z) {
 node_t *rbtree_insert(rbtree *t, const key_t key) {
   // TODO: implement insert
   node_t *z = (node_t *)calloc(1, sizeof(node_t));    // z는 새로운 노드
-    z->key = key;
+  z->key = key;
   node_t *y = t->nil;
   node_t *x = t->root;
   while (x != t->nil) {
@@ -165,14 +165,14 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   z->left = t->nil;
   z->right = t->nil;
   z->color = RBTREE_RED;
+  rbtree_insert_fixup(t, z);
   return t->root;
-  rbtree_insert_fixup(rbtree *t, node_t *z);
   }
 
 node_t *rbtree_find(const rbtree *t, const key_t key) {
   // TODO: implement find
   node_t *n = t->root;
-  while (n != t->nil || key != n->key) {
+  while (n != t->nil && key != n->key) {
     if (key < n->key)
       n = n->left;
     else
@@ -188,8 +188,10 @@ node_t *rbtree_find(const rbtree *t, const key_t key) {
 node_t *rbtree_min(const rbtree *t) {
   // TODO: implement find
   node_t *ptr = t->root;
-  while (ptr != t->nil) {
-    ptr = t->root->left;
+  if (ptr == t->nil)
+    return ptr;
+  while (ptr->left != t->nil) {
+    ptr = ptr->left;
   }
   return ptr;
 }
@@ -197,8 +199,10 @@ node_t *rbtree_min(const rbtree *t) {
 node_t *rbtree_max(const rbtree *t) {
   // TODO: implement find
   node_t *ptr = t->root;
-  while (ptr != t->nil) {
-    ptr = t->root->right;
+  if (ptr == t->nil)
+    return ptr;
+  while (ptr->right != t->nil) {
+    ptr = ptr->right;
   }
   return ptr;
 }
@@ -318,3 +322,13 @@ int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
   // TODO: implement to_array
   return 0;
 }
+// int main(){
+//   rbtree *t = new_rbtree();
+//   rbtree_insert(t, 1);
+//   rbtree_insert(t, 2);
+//   rbtree_insert(t, 3);
+//   rbtree_insert(t, 4);
+//   rbtree_min(t);
+//   rbtree_max(t);
+//   return 0;
+// }
