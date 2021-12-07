@@ -6,6 +6,8 @@ rbtree *new_rbtree(void) {
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
   node_t *nil = (node_t *)calloc(1, sizeof(node_t));
   nil->color = RBTREE_BLACK;
+  nil->left = nil;
+  nil->right = nil;
   p->nil = nil;
   p->root = nil;
   p->root->parent = nil;
@@ -18,17 +20,13 @@ void delete_node(rbtree *t, node_t *x) {
   delete_node(t, x->left);
   delete_node(t, x->right);
   free(x);
-  x = NULL;
 }
-
 
 void delete_rbtree(rbtree *t) {
   // TODO: reclaim the tree nodes's memory
   delete_node(t, t->root);
   free(t->nil);
   free(t);
-  t->nil = NULL;
-  t = NULL;  
 }
 
 // 추가된 함수
@@ -79,31 +77,31 @@ void right_rotate(rbtree *t, node_t *y) {
 }
 
 // 추가된 함수
-node_t *rbtree_insert_fixup(rbtree *t, node_t *z) {
+void *rbtree_insert_fixup(rbtree *t, node_t *z) {
+  node_t *y; // 삼촌 y
   while (z->parent->color == RBTREE_RED) {
   // while: z 초기 대상은 새로운 노드로서 레드;
   // 즉 현재 노드가 부모와 레드 중복인 경우이다.
+    // 부모가 조부모 왼쪽
     if (z->parent == z->parent->parent->left) {
-      // z의 부모가 왼쪽 자식이면
-      node_t *y = z->parent->parent->right;
-      // y 는 오른쪽 자식; 엉클로 설정
-      if (y->color == RBTREE_RED) {
+      y = z->parent->parent->right;
+      // 삼촌 y
       // 경우1 삼촌도 레드
+      if (y->color == RBTREE_RED) {
         z->parent->color = RBTREE_BLACK;
         y->color = RBTREE_BLACK;
-        z->parent->parent = RBTREE_RED;
+        z->parent->parent->color = RBTREE_RED;
         z = z->parent->parent;
         // 다음 체크대상은 기존 z의 조부모
       }
+
       else {
+        // 경우2 삼촌 블랙, 삼각을 그리며 존재
         if (z == z->parent->right) {
-      // 경우2 z가 부모의 오른쪽 자식이면(값이 더 크면)
         z = z->parent;
-        // 새로운 기준은 기존 z의 부모로 설정하고
         left_rotate(t, z);
-        // 레프트회전을 하면 부모로 설정된 z가
-        // 이제 자식이 되고 원래 자식이 부모가 된다(z->parent)
         }
+        // 경우3 삼촌 블랙, 나와 멀리서 선형
         z->parent->color = RBTREE_BLACK;
         z->parent->parent->color = RBTREE_RED;
         right_rotate(t, z->parent->parent);
@@ -112,7 +110,7 @@ node_t *rbtree_insert_fixup(rbtree *t, node_t *z) {
     else {
       // else는 if에서 left와 right 만 바꾼 경우 
       // z의 부모가 왼쪽 자식이 아니면
-      node_t *y = z->parent->parent->left;
+      y = z->parent->parent->left;
       // y 는 왼쪽 자식; 엉클로 설정
       if (y->color == RBTREE_RED) {
       // 경우1 삼촌도 레드
@@ -123,14 +121,12 @@ node_t *rbtree_insert_fixup(rbtree *t, node_t *z) {
         // 다음 체크대상은 기존 z의 조부모
       }
       else {
+        // 경우2 z가 부모의 왼쪽 자식, 삼촌 블랙 삼각
         if (z == z->parent->left) {
-        // 경우2 z가 부모의 왼쪽 자식이면(값이 더 작으면)
         z = z->parent;
-        // 새로운 기준은 기존 z의 부모로 설정하고
         right_rotate(t, z);
-        // 라이트회전을 하면 부모로 설정된 z가
-        // 이제 자식이 되고 원래 자식이 부모가 된다(z->parent)
         }
+        // 경우3 z가 부모의 우측 자식, 삼촌 블랙 선형
         z->parent->color = RBTREE_BLACK;
         z->parent->parent->color = RBTREE_RED;
         left_rotate(t, z->parent->parent);
@@ -138,12 +134,10 @@ node_t *rbtree_insert_fixup(rbtree *t, node_t *z) {
     }
   }
   t->root->color = RBTREE_BLACK;
-  return t->root;
 }
 
 node_t *rbtree_insert(rbtree *t, const key_t key) {
   node_t *z = (node_t *)calloc(1, sizeof(node_t));    // z는 새로운 노드
-  z->key = key;
   node_t *y = t->nil;
   node_t *x = t->root;
   while (x != t->nil) {
@@ -162,24 +156,23 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
     y->right = z;
   z->left = t->nil;
   z->right = t->nil;
+  z->key = key;
   z->color = RBTREE_RED;
   rbtree_insert_fixup(t, z);
-  return t->root;
+  return z;
   }
 
 node_t *rbtree_find(const rbtree *t, const key_t key) {
-  node_t *n = t->root;
-  while (n != t->nil && key != n->key) {
-    if (key < n->key)
-      n = n->left;
+  node_t *ptr = t->root;
+  while (ptr != t->nil) {
+    if (key < ptr->key)
+      ptr = ptr->left;
+    else if (key > ptr->key)
+      ptr = ptr->right;
     else
-      n = n->right;
+      return ptr;
   }
-  if (n == t->nil)
-    return NULL;
-  else
-    return n;
-  // return t->root;
+  return NULL;
 }
 
 node_t *rbtree_min(const rbtree *t) {
@@ -309,6 +302,7 @@ int rbtree_erase(rbtree *t, node_t *p) {
   if (y_origin_color == RBTREE_BLACK)
     rbtree_erase_fixup(t, x);
 
+  free(y);
   return 0;
 }
 
@@ -316,13 +310,13 @@ int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
   // TODO: implement to_array
   return 0;
 }
-int main(){
-  rbtree *t = new_rbtree();
-  rbtree_insert(t, 5);
-  rbtree_insert(t, 4);
-  rbtree_insert(t, 3);
-  rbtree_insert(t, 2);
-  rbtree_min(t);
-  rbtree_max(t);
-  return 0;
-}
+// int main(){
+//   rbtree *t = new_rbtree();
+//   rbtree_insert(t, 5);
+//   rbtree_insert(t, 4);
+//   rbtree_insert(t, 3);
+//   rbtree_insert(t, 2);
+//   rbtree_min(t);
+//   rbtree_max(t);
+//   return 0;
+// }
