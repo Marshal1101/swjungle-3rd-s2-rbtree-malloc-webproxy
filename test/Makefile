@@ -1,5 +1,5 @@
 .PHONY: test
-# CFLAGS는 gcc 뒤에 옵션 넣어주는 명령어
+
 CFLAGS=-I ../src -Wall -g -DSENTINEL
 
 test: test-rbtree
