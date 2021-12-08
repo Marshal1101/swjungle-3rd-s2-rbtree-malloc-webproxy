@@ -75,6 +75,7 @@ void rbtree_insert_test(){
     rbtree_insert(rbt3, 3);  
     rbtree_insert(rbt3, 2);
     rbtree_insert(rbt3, 1);
+    rbtree_erase(rbt3, rbtree_find(rbt3, 6));
     rbtree_print(rbt3);
     delete_rbtree(rbt3);
 }
