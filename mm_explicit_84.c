@@ -26,7 +26,7 @@ team_t team = {
     /* Team name */
     "3",
     /* First member's full name */
-    "PARK Hongjung",
+    "PARK Hongjung - explicit",
     /* First member's email address */
     "adequateplayer9@gmail.com",
     /* Second member's full name (leave blank if none) */
@@ -53,7 +53,7 @@ team_t team = {
 #define PACK(size, alloc) ((size) | (alloc))
 #define GET(p)        (*(size_t *)(p))
 #define PUT(p, val)   (*(size_t *)(p) = (val))
-#define GET_SIZE(p)  (GET(p) & ~0x1)
+#define GET_SIZE(p)  (GET(p) & ~0x7)
 #define GET_ALLOC(p) (GET(p) & 0x1)
 #define HDRP(bp)     ((void *)(bp) - WSIZE)
 #define FTRP(bp)     ((void *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
@@ -420,54 +420,3 @@ void *mm_realloc(void *ptr, size_t size)
     return bp;
   }
 }
-
-
-
-// // consistency checker
-
-// static int mm_check() {
-
-//   // Is every block in the free list marked as free?
-//   void *next;
-//   for (next = free_listp; GET_ALLOC(HDRP(next)) == 0; next = NEXT_FREE(next)) {
-//     if (GET_ALLOC(HDRP(next))) {
-//       printf("Consistency error: block %p in free list but marked allocated!", next);
-//       return 1;
-//     }
-//   }
-
-//   // Are there any contiguous free blocks that escaped coalescing?
-//   for (next = free_listp; GET_ALLOC(HDRP(next)) == 0; next = NEXT_FREE(next)) {
-
-//     char *prev = PREV_FREE(HDRP(next));
-//       if(prev != NULL && HDRP(next) - FTRP(prev) == DSIZE) {
-//         printf("Consistency error: block %p missed coalescing!", next);
-//         return 1;
-//       }
-//   }
-
-//   // Do the pointers in the free list point to valid free blocks?
-//   for (next = free_listp; GET_ALLOC(HDRP(next)) == 0; next = NEXT_FREE(next)) {
-
-//     if(next < mem_heap_lo() || next > mem_heap_hi()) {
-//       printf("Consistency error: free block %p invalid", next);
-//       return 1;
-//     }
-//   }
-
-//   // Do the pointers in a heap block point to a valid heap address?
-//   for (next = heap_listp; NEXT_BLKP(next) != NULL; next = NEXT_BLKP(next)) {
-
-//     if(next < mem_heap_lo() || next > mem_heap_hi()) {
-//       printf("Consistency error: block %p outside designated heap space", next);
-//       return 1;
-//     }
-//   }
-
-//   return 0;
-// }
-
-
-
-
-

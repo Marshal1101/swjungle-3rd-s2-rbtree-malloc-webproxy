@@ -11,7 +11,7 @@
       "stopAtEntry": false,
       "cwd": "/mnt/c/projects/malloclab-jungle",
       "environment": [],
-      "program": "/mnt/c/projects/malloclab-jungle/mdriver",
+      "program": "/mnt/c/projects/malloclab-jungle/build/Debug/outDebug",
       "internalConsoleOptions": "openOnSessionStart",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",

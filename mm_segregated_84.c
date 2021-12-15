@@ -96,8 +96,8 @@ static void insert_block(void *bp, size_t size);
 // 전역 변수
 static void *heap_listp;  /* Points to the start of the heap */
 
-// segregated list 크기별 정적 배열
-static void *segregated_list;
+// segregated list 정적 배열
+static void *segregated_list[LISTLIMIT];
 
 
 int mm_init(void)
@@ -117,8 +117,7 @@ int mm_init(void)
     PUT(heap_listp + (1 * WSIZE), PACK(DSIZE, 1)); /* Prologue header */
     PUT(heap_listp + (2 * WSIZE), PACK(DSIZE, 1)); /* Prologue footer */
     PUT(heap_listp + (3 * WSIZE), PACK(0, 1));     /* Epilogue header */
-    segregated_list = heap_listp+2*WSIZE;
-    *segregated_list = NULL;
+    heap_listp = heap_listp+2*WSIZE;
     
     /* Extended the empty heap with a free block of CHUNKSIZE bytes */
     if (extend_heap(CHUNKSIZE / WSIZE) == NULL)
@@ -367,24 +366,17 @@ static void insert_block(void *bp, size_t size)
     // search_ptr: 리스트 내 삽입 블록 크기보다 바로 다음으로 큰 블록의 주소
     // insert_ptr: 리스트 내 삽입 블록 크기보다 바로 직전에 작은 블록의 주소
     int list = 0;
-    void *search_listp;
     void *search_ptr;
     void *insert_ptr = NULL;
 
     // 블록크기의 이진수 자릿수가 곧 segregated list에 배정될 인덱스
-    while (size > 1){
+    while ((list < LISTLIMIT-1) && (size > 1)){
         size >>= 1;
         list++;
     }
 
-    search_listp = segregated_list + (list * WSIZE);
-    while ((search_listp != NULL) && (size > GET_SIZE(HDRP(search_ptr)))) {
-        insert_ptr = search_ptr;
-        search_ptr = SUCC_FREE(search_ptr);   
-    }
     // list에 담긴 인덱스를 통해 해당 인덱스 배열의 첫 주소를 search_ptr에 넣는다.
-    search_ptr = 
-    if GET_ALLOC(HDRP(search_ptr)) 
+    search_ptr = segregated_list[list];
 
     // 만약 배열이 비어있지 않고, 삽입할 블록 크기가 배열에 있는 첫 블록보다 크다면,
     // 배열 끝에 도달하거나 삽입할 블록보다 더 큰 블록을 만날 때까지

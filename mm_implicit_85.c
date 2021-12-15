@@ -26,7 +26,7 @@ team_t team = {
     /* Team name */
     "3",
     /* First member's full name */
-    "PARK Hongjung",
+    "PARK Hongjung - implicit - next fit",
     /* First member's email address */
     "adequateplayer9@gmail.com",
     /* Second member's full name (leave blank if none) */
