@@ -1,13 +1,19 @@
+/* $begin tinymain */
 /*
  * tiny.c - A simple, iterative HTTP/1.0 Web server that uses the
  *     GET method to serve static and dynamic content.
+ *
+ * Updated 11/2019 droh
+ *   - Fixed sprintf() aliasing issue in serve_static(), and clienterror().
  */
 #include "csapp.h"
 
 void doit(int fd);
 void read_requesthdrs(rio_t *rp);
+//// int read_requesthdrs(rio_t *rp, int log, char *method);
 int parse_uri(char *uri, char *filename, char *cgiargs);
 void serve_static(int fd, char *filename, int filesize);
+//// void static_serve(int fd, char *filename, int filesize, char *method);
 void get_filetype(char *filename, char *filetype);
 void serve_dynamic(int fd, char *filename, char *cgiargs);
 void clienterror(int fd, char *cause, char *errnum, char *shortmsg,
@@ -19,7 +25,6 @@ int main(int argc, char **argv)
   char hostname[MAXLINE], port[MAXLINE];
   socklen_t clientlen;
   struct sockaddr_storage clientaddr;
-
   /* Check command line args */
   if (argc != 2) {
     fprintf(stderr, "usage: %s <port>\n", argv[0]);
@@ -45,12 +50,15 @@ void doit(int fd)
   char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE];
   char filename[MAXLINE], cgiargs[MAXLINE];
   rio_t rio;
+  // int log;
+  // size_t n;
 
   /* Read request line and headers */
   Rio_readinitb(&rio, fd);
   Rio_readlineb(&rio, buf, MAXLINE);
   printf("Request headers:\n");
   printf("%s", buf);
+
   sscanf(buf, "%s %s %s", method, uri, version);
   if (strcasecmp(method, "GET")) {
     clienterror(fd, method, "501", "Not implemented",
@@ -85,8 +93,7 @@ void doit(int fd)
   }
 }
 
-void clienterror(int fd, char *cause, char *errnum,
-                char *shortmsg, char *longmsg)
+void clienterror(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg)
 {
   char buf[MAXLINE], body[MAXBUF];
 
@@ -141,7 +148,8 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
       *ptr = '\0';
     }
     else
-      strcpy(cgiargs, "");      
+      strcpy(cgiargs, "");
+      
     strcpy(filename, ".");
     strcat(filename, uri);
     return 0;
@@ -157,7 +165,7 @@ void serve_static(int fd, char *filename, int filesize)
   get_filetype(filename, filetype);
   sprintf(buf, "HTTP/1.0 200 OK\r\n");
   sprintf(buf, "%sServer: Tiny Web Server\r\n", buf);
-  sprintf(buf, "%sConnection: close\r\n", buf);
+  sprintf("%sConnection: close\r\n", buf);
   sprintf(buf, "%sContent-length: %d\r\n", buf, filesize);
   sprintf(buf, "%sContent-type: %s\r\n\r\n", buf, filetype);
   Rio_writen(fd, buf, strlen(buf));
@@ -175,7 +183,7 @@ void serve_static(int fd, char *filename, int filesize)
 // get_filetype - Derive file type from filename
 void get_filetype(char *filename, char *filetype)
 {
-  if (strstr(filename, ".html"))
+  if (strstr(filename, ".thml"))
     strcpy(filetype, "text/html");
   else if (strstr(filename, ".gif"))
     strcpy(filetype, "image/git");
