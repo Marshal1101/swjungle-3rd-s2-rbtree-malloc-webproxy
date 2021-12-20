@@ -175,7 +175,7 @@ void serve_static(int fd, char *filename, int filesize)
 // get_filetype - Derive file type from filename
 void get_filetype(char *filename, char *filetype)
 {
-  if (strstr(filename, ".html"))
+  if (strstr(filename, ".thml"))
     strcpy(filetype, "text/html");
   else if (strstr(filename, ".gif"))
     strcpy(filetype, "image/git");
