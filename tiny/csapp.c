@@ -778,7 +778,7 @@ ssize_t rio_writen(int fd, void *usrbuf, size_t n)
     ssize_t nwritten;
     char *bufp = usrbuf;
 
-    while (nleft > 0) {
+    while (nleft > 0) {            // while -> if 바꾸면 safari에서 영상실행됨
 	if ((nwritten = write(fd, bufp, nleft)) <= 0) {
 	    if (errno == EINTR)  /* Interrupted by sig handler return */
 		nwritten = 0;    /* and call write() again */
